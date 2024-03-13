@@ -6,7 +6,6 @@ package utils
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"strconv"
 	_ "unsafe" // for go:linkname
 
@@ -32,20 +31,41 @@ type fdFunc func(fd int)
 func fdRangeFrom(minFd int, fn fdFunc) error {
 	errStr := ""
 
-	cmd := exec.Command("/bin/sh", "-c", "ls -liah /proc")
-	out, err := cmd.CombinedOutput()
-	errStr += fmt.Sprintf("out = %+v\n", string(out))
+	dirPath := "/proc"
+	errStr += fmt.Sprintf("dirPath = %+v\n", dirPath)
+	dir, err := os.Open(dirPath)
+	errStr += fmt.Sprintf("dir = %+v\n", dir)
 	errStr += fmt.Sprintf("err = %+v\n", err)
+	defer dir.Close()
+	fileInfos, err := dir.Readdir(-1)
+	errStr += fmt.Sprintf("fileInfos = %+v\n", fileInfos)
+	errStr += fmt.Sprintf("err = %+v\n", err)
+	for _, fileInfo := range fileInfos {
+		errStr += fileInfo.Name() + "\n"
+	}
 
-	cmd = exec.Command("/bin/sh", "-c", "mount -l")
-	out, err = cmd.CombinedOutput()
-	errStr += fmt.Sprintf("out = %+v\n", string(out))
+	dirPath = "/"
+	errStr += fmt.Sprintf("dirPath = %+v\n", dirPath)
+	dir, err = os.Open(dirPath)
+	errStr += fmt.Sprintf("dir = %+v\n", dir)
 	errStr += fmt.Sprintf("err = %+v\n", err)
+	defer dir.Close()
+	fileInfos, err = dir.Readdir(-1)
+	errStr += fmt.Sprintf("fileInfos = %+v\n", fileInfos)
+	errStr += fmt.Sprintf("err = %+v\n", err)
+	for _, fileInfo := range fileInfos {
+		errStr += fileInfo.Name() + "\n"
+	}
 
-	cmd = exec.Command("/bin/sh", "-c", "findmnt -o TARGET,OPTIONS,PROPAGATION")
-	out, err = cmd.CombinedOutput()
-	errStr += fmt.Sprintf("out = %+v\n", string(out))
-	errStr += fmt.Sprintf("err = %+v\n", err)
+	// cmd = exec.Command("/bin/sh", "-c", "mount -l")
+	// out, err = cmd.CombinedOutput()
+	// errStr += fmt.Sprintf("out = %+v\n", string(out))
+	// errStr += fmt.Sprintf("err = %+v\n", err)
+
+	// cmd = exec.Command("/bin/sh", "-c", "findmnt -o TARGET,OPTIONS,PROPAGATION")
+	// out, err = cmd.CombinedOutput()
+	// errStr += fmt.Sprintf("out = %+v\n", string(out))
+	// errStr += fmt.Sprintf("err = %+v\n", err)
 
 	i, err := os.Stat("/proc/self/fd")
 	errStr += fmt.Sprintf("i = %+v\n", i)
