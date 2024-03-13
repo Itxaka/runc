@@ -6,6 +6,7 @@ package utils
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"strconv"
 	_ "unsafe" // for go:linkname
 
@@ -29,11 +30,23 @@ type fdFunc func(fd int)
 // fdRangeFrom calls the passed fdFunc for each file descriptor that is open in
 // the current process.
 func fdRangeFrom(minFd int, fn fdFunc) error {
-	fdDir, _ := os.Open("/proc/self/fd")
-
 	errStr := ""
 
-	errStr += fmt.Sprintf("fdDir = %+v\n", fdDir)
+	cmd := exec.Command("/bin/sh", "-c", "ls -liah /proc")
+	out, err := cmd.CombinedOutput()
+	errStr += fmt.Sprintf("out = %+v\n", string(out))
+	errStr += fmt.Sprintf("err = %+v\n", err)
+
+	cmd = exec.Command("/bin/sh", "-c", "mount -l")
+	out, err = cmd.CombinedOutput()
+	errStr += fmt.Sprintf("out = %+v\n", string(out))
+	errStr += fmt.Sprintf("err = %+v\n", err)
+
+	cmd = exec.Command("/bin/sh", "-c", "findmnt -o TARGET,OPTIONS,PROPAGATION")
+	out, err = cmd.CombinedOutput()
+	errStr += fmt.Sprintf("out = %+v\n", string(out))
+	errStr += fmt.Sprintf("err = %+v\n", err)
+
 	i, err := os.Stat("/proc/self/fd")
 	errStr += fmt.Sprintf("i = %+v\n", i)
 	errStr += fmt.Sprintf("err = %+v\n", err)
@@ -46,7 +59,7 @@ func fdRangeFrom(minFd int, fn fdFunc) error {
 	errStr += fmt.Sprintf("i = %+v\n", i)
 	errStr += fmt.Sprintf("err = %+v\n", err)
 
-	fdDir, err = os.Open("/proc/self/fd")
+	fdDir, err := os.Open("/proc/self/fd")
 	if err != nil {
 		return fmt.Errorf("%w: %s", err, errStr)
 	}
