@@ -9,6 +9,7 @@ import (
 	"strconv"
 	_ "unsafe" // for go:linkname
 
+	"github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
 )
 
@@ -30,20 +31,20 @@ type fdFunc func(fd int)
 // the current process.
 func fdRangeFrom(minFd int, fn fdFunc) error {
 	fdDir, _ := os.Open("/proc/self/fd")
-	fmt.Printf("fdDir = %+v\n", fdDir)
+	logrus.Debugf("fdDir = %+v\n", fdDir)
 	i, err := os.Stat("/proc/self/fd")
-	fmt.Printf("i = %+v\n", i)
-	fmt.Printf("err = %+v\n", err)
+	logrus.Debugf("i = %+v\n", i)
+	logrus.Debugf("err = %+v\n", err)
 
 	target, err := os.Readlink("/proc/self/fd")
 	if err != nil {
-		fmt.Printf("symlink read err = %+v\n", err)
+		logrus.Debugf("symlink read err = %+v\n", err)
 	}
-	fmt.Printf("target = %+v\n", target)
+	logrus.Debugf("target = %+v\n", target)
 
 	i, err = os.Stat(target)
-	fmt.Printf("i = %+v\n", i)
-	fmt.Printf("err = %+v\n", err)
+	logrus.Debugf("i = %+v\n", i)
+	logrus.Debugf("err = %+v\n", err)
 
 	fdDir, err = os.Open("/proc/self/fd")
 	if err != nil {
