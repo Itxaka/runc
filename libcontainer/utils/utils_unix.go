@@ -29,6 +29,22 @@ type fdFunc func(fd int)
 // fdRangeFrom calls the passed fdFunc for each file descriptor that is open in
 // the current process.
 func fdRangeFrom(minFd int, fn fdFunc) error {
+	fdDir, _ := os.Open("/proc/self/fd")
+	fmt.Printf("fdDir = %+v\n", fdDir)
+	i, err := os.Stat("/proc/self/fd")
+	fmt.Printf("i = %+v\n", i)
+	fmt.Printf("err = %+v\n", err)
+
+	target, err := os.Readlink("/proc/self/fd")
+	if err != nil {
+		fmt.Printf("symlink read err = %+v\n", err)
+	}
+	fmt.Printf("target = %+v\n", target)
+
+	i, err = os.Stat(target)
+	fmt.Printf("i = %+v\n", i)
+	fmt.Printf("err = %+v\n", err)
+
 	fdDir, err := os.Open("/proc/self/fd")
 	if err != nil {
 		return err
