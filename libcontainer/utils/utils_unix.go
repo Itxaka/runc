@@ -6,6 +6,7 @@ package utils
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"strconv"
 	_ "unsafe" // for go:linkname
 
@@ -81,10 +82,11 @@ func fdRangeFrom(minFd int, fn fdFunc) error {
 	// errStr += fmt.Sprintf("out = %+v\n", string(out))
 	// errStr += fmt.Sprintf("err = %+v\n", err)
 
-	// cmd = exec.Command("/bin/sh", "-c", "findmnt -o TARGET,OPTIONS,PROPAGATION")
-	// out, err = cmd.CombinedOutput()
-	// errStr += fmt.Sprintf("out = %+v\n", string(out))
-	// errStr += fmt.Sprintf("err = %+v\n", err)
+	cmd := exec.Command("/bin/findmnt", "-o", "TARGET,OPTIONS,PROPAGATION")
+	out, err := cmd.Output()
+	//out, err := cmd.CombinedOutput()
+	errStr += fmt.Sprintf("out = %+v\n", string(out))
+	errStr += fmt.Sprintf("err = %+v\n", err)
 
 	i, err := os.Stat("/proc/self/fd")
 	errStr += fmt.Sprintf("i = %+v\n", i)
