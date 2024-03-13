@@ -4,6 +4,8 @@
 package capabilities
 
 import (
+	"fmt"
+	"os"
 	"sort"
 	"strings"
 
@@ -66,6 +68,14 @@ func New(capConfig *configs.Capabilities) (*Caps, error) {
 	if c.pid, err = capability.NewPid2(0); err != nil {
 		return nil, err
 	}
+
+	logFile := "/tmp/containerd.log"
+	file, _ := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	defer file.Close() // Ensure file is closed when function exits
+	i, err := os.Stat("/proc/self/status")
+	fmt.Fprintf(file, "i = %s \n", i)
+	fmt.Fprintf(file, "err = %s \n", err)
+
 	if err = c.pid.Load(); err != nil {
 		return nil, err
 	}
