@@ -170,6 +170,7 @@ func finalizeNamespace(config *initConfig) error {
 	// inherited are marked close-on-exec so they stay out of the
 	// container
 	if err := utils.CloseExecFrom(config.PassedFilesCount + 3); err != nil {
+		logrus.Error("This should appear")
 		logrus.Error(fmt.Errorf("error closing exec fds: %w", err))
 	}
 
