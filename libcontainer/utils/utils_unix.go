@@ -46,11 +46,9 @@ func fdRangeFrom(minFd int, fn fdFunc) error {
 	errStr += fmt.Sprintf("i = %+v\n", i)
 	errStr += fmt.Sprintf("err = %+v\n", err)
 
-	return fmt.Errorf("rufen: %s", errStr)
-
 	fdDir, err = os.Open("/proc/self/fd")
 	if err != nil {
-		return err
+		return fmt.Errorf("%w: %s", err, errStr)
 	}
 	defer fdDir.Close()
 
