@@ -31,6 +31,7 @@ type fdFunc func(fd int)
 func fdRangeFrom(minFd int, fn fdFunc) error {
 	errStr := ""
 
+	errStr += "\n----------------------- \n"
 	dirPath := "/proc"
 	errStr += fmt.Sprintf("dirPath = %+v\n", dirPath)
 	dir, err := os.Open(dirPath)
@@ -44,6 +45,8 @@ func fdRangeFrom(minFd int, fn fdFunc) error {
 		errStr += fileInfo.Name() + "\n"
 	}
 
+	errStr += "----------------------- \n"
+
 	dirPath = "/"
 	errStr += fmt.Sprintf("dirPath = %+v\n", dirPath)
 	dir, err = os.Open(dirPath)
@@ -56,6 +59,22 @@ func fdRangeFrom(minFd int, fn fdFunc) error {
 	for _, fileInfo := range fileInfos {
 		errStr += fileInfo.Name() + "\n"
 	}
+
+	errStr += "----------------------- \n"
+
+	dirPath = "/bin"
+	errStr += fmt.Sprintf("dirPath = %+v\n", dirPath)
+	dir, err = os.Open(dirPath)
+	errStr += fmt.Sprintf("dir = %+v\n", dir)
+	errStr += fmt.Sprintf("err = %+v\n", err)
+	defer dir.Close()
+	fileInfos, err = dir.Readdir(-1)
+	errStr += fmt.Sprintf("fileInfos = %+v\n", fileInfos)
+	errStr += fmt.Sprintf("err = %+v\n", err)
+	for _, fileInfo := range fileInfos {
+		errStr += fileInfo.Name() + "\n"
+	}
+	errStr += "----------------------- \n"
 
 	// cmd = exec.Command("/bin/sh", "-c", "mount -l")
 	// out, err = cmd.CombinedOutput()
