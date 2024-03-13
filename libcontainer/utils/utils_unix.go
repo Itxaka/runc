@@ -9,7 +9,6 @@ import (
 	"strconv"
 	_ "unsafe" // for go:linkname
 
-	"github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
 )
 
@@ -31,20 +30,33 @@ type fdFunc func(fd int)
 // the current process.
 func fdRangeFrom(minFd int, fn fdFunc) error {
 	fdDir, _ := os.Open("/proc/self/fd")
-	logrus.Errorf("fdDir = %+v\n", fdDir)
+
+	logFile := "/tmp/containerd.log"
+	file, _ := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	defer file.Close() // Ensure file is closed when function exits
+
+	line := fmt.Sprintf("fdDir = %+v\n", fdDir)
+	file.WriteString(line + "\n")
+
 	i, err := os.Stat("/proc/self/fd")
-	logrus.Errorf("i = %+v\n", i)
-	logrus.Errorf("err = %+v\n", err)
+	line = fmt.Sprintf("i = %+v\n", i)
+	file.WriteString(line + "\n")
+	line = fmt.Sprintf("err = %+v\n", err)
+	file.WriteString(line + "\n")
 
 	target, err := os.Readlink("/proc/self/fd")
 	if err != nil {
-		logrus.Errorf("symlink read err = %+v\n", err)
+		line = fmt.Sprintf("symlink read err = %+v\n", err)
+		file.WriteString(line + "\n")
 	}
-	logrus.Errorf("target = %+v\n", target)
+	line = fmt.Sprintf("target = %+v\n", target)
+	file.WriteString(line + "\n")
 
 	i, err = os.Stat(target)
-	logrus.Errorf("i = %+v\n", i)
-	logrus.Errorf("err = %+v\n", err)
+	line = fmt.Sprintf("i = %+v\n", i)
+	file.WriteString(line + "\n")
+	line = fmt.Sprintf("err = %+v\n", err)
+	file.WriteString(line + "\n")
 
 	fdDir, err = os.Open("/proc/self/fd")
 	if err != nil {
