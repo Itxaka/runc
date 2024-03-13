@@ -166,7 +166,6 @@ func verifyCwd() error {
 // and working dir, and closes any leaked file descriptors
 // before executing the command inside the namespace
 func finalizeNamespace(config *initConfig) error {
-	logrus.Error("This is not an error but should appear")
 	// Ensure that all unwanted fds we may have accidentally
 	// inherited are marked close-on-exec so they stay out of the
 	// container

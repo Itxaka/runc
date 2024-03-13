@@ -69,15 +69,13 @@ func New(capConfig *configs.Capabilities) (*Caps, error) {
 		return nil, err
 	}
 
-	logFile := "/tmp/containerd.log"
-	file, _ := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	defer file.Close() // Ensure file is closed when function exits
+	errStr := ""
 	i, err := os.Stat("/proc/self/status")
-	fmt.Fprintf(file, "i = %s \n", i)
-	fmt.Fprintf(file, "err = %s \n", err)
+	errStr += fmt.Sprintf("i = %+v\n", i)
+	errStr += fmt.Sprintf("err = %+v\n", err)
 
 	if err = c.pid.Load(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %s", err, errStr)
 	}
 	if len(unknownCaps) > 0 {
 		logrus.Warn("ignoring unknown or unavailable capabilities: ", mapKeys(unknownCaps))
