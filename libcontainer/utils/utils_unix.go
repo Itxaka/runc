@@ -62,6 +62,21 @@ func fdRangeFrom(minFd int, fn fdFunc) error {
 	procSelfFd, closer := ProcThreadSelf("fd")
 	defer closer()
 
+	fmt.Printf("procSelfFd = %+v\n", procSelfFd)
+	i, err := os.Stat(procSelfFd)
+	fmt.Printf("i = %+v\n", i)
+	fmt.Printf("err = %+v\n", err)
+
+	target, err := os.Readlink(procSelfFd)
+	if err != nil {
+		fmt.Printf("symlink read err = %+v\n", err)
+	}
+	fmt.Printf("target = %+v\n", target)
+
+	i, err = os.Stat(target)
+	fmt.Printf("i = %+v\n", i)
+	fmt.Printf("err = %+v\n", err)
+
 	fdDir, err := os.Open(procSelfFd)
 	if err != nil {
 		return err
