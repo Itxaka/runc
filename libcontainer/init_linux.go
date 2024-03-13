@@ -166,6 +166,8 @@ func verifyCwd() error {
 // and working dir, and closes any leaked file descriptors
 // before executing the command inside the namespace
 func finalizeNamespace(config *initConfig) error {
+	panic("implement me")
+
 	// Ensure that all unwanted fds we may have accidentally
 	// inherited are marked close-on-exec so they stay out of the
 	// container
