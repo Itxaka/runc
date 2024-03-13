@@ -31,32 +31,22 @@ type fdFunc func(fd int)
 func fdRangeFrom(minFd int, fn fdFunc) error {
 	fdDir, _ := os.Open("/proc/self/fd")
 
-	logFile := "/tmp/containerd.log"
-	file, _ := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	defer file.Close() // Ensure file is closed when function exits
+	errStr := ""
 
-	line := fmt.Sprintf("fdDir = %+v\n", fdDir)
-	file.WriteString(line + "\n")
-
+	errStr += fmt.Sprintf("fdDir = %+v\n", fdDir)
 	i, err := os.Stat("/proc/self/fd")
-	line = fmt.Sprintf("i = %+v\n", i)
-	file.WriteString(line + "\n")
-	line = fmt.Sprintf("err = %+v\n", err)
-	file.WriteString(line + "\n")
+	errStr += fmt.Sprintf("i = %+v\n", i)
+	errStr += fmt.Sprintf("err = %+v\n", err)
 
 	target, err := os.Readlink("/proc/self/fd")
-	if err != nil {
-		line = fmt.Sprintf("symlink read err = %+v\n", err)
-		file.WriteString(line + "\n")
-	}
-	line = fmt.Sprintf("target = %+v\n", target)
-	file.WriteString(line + "\n")
+	errStr += fmt.Sprintf("symlink read err = %+v\n", err)
+	errStr += fmt.Sprintf("target = %+v\n", target)
 
 	i, err = os.Stat(target)
-	line = fmt.Sprintf("i = %+v\n", i)
-	file.WriteString(line + "\n")
-	line = fmt.Sprintf("err = %+v\n", err)
-	file.WriteString(line + "\n")
+	errStr += fmt.Sprintf("i = %+v\n", i)
+	errStr += fmt.Sprintf("err = %+v\n", err)
+
+	return fmt.Errorf("rufen: %s", errStr)
 
 	fdDir, err = os.Open("/proc/self/fd")
 	if err != nil {
