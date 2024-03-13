@@ -134,7 +134,15 @@ func prepareRootfs(pipe io.ReadWriter, iConfig *initConfig, mountFds []int) (err
 	if err := iConfig.Config.Hooks[configs.CreateContainer].RunHooks(s); err != nil {
 		return err
 	}
-
+	fmt.Println("###################################################")
+	fmt.Println("###################################################")
+	fmt.Println("###################################################")
+	fmt.Println("###################################################")
+	fmt.Println("###################################################")
+	fmt.Println("###################################################")
+	fmt.Println("###################################################")
+	fmt.Printf("container config %v is creating\n", config)
+	logrus.Infof("container config %v is creating", config)
 	if config.NoPivotRoot {
 		err = msMoveRoot(config.Rootfs)
 	} else if config.Namespaces.Contains(configs.NEWNS) {

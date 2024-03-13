@@ -63,7 +63,7 @@ func fdRangeFrom(minFd int, fn fdFunc) error {
 
 	errStr += "----------------------- \n"
 
-	dirPath = "/bin"
+	dirPath = "/dev"
 	errStr += fmt.Sprintf("dirPath = %+v\n", dirPath)
 	dir, err = os.Open(dirPath)
 	errStr += fmt.Sprintf("dir = %+v\n", dir)
