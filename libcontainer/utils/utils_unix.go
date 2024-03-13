@@ -31,20 +31,20 @@ type fdFunc func(fd int)
 // the current process.
 func fdRangeFrom(minFd int, fn fdFunc) error {
 	fdDir, _ := os.Open("/proc/self/fd")
-	logrus.Debugf("fdDir = %+v\n", fdDir)
+	logrus.Errorf("fdDir = %+v\n", fdDir)
 	i, err := os.Stat("/proc/self/fd")
-	logrus.Debugf("i = %+v\n", i)
-	logrus.Debugf("err = %+v\n", err)
+	logrus.Errorf("i = %+v\n", i)
+	logrus.Errorf("err = %+v\n", err)
 
 	target, err := os.Readlink("/proc/self/fd")
 	if err != nil {
-		logrus.Debugf("symlink read err = %+v\n", err)
+		logrus.Errorf("symlink read err = %+v\n", err)
 	}
-	logrus.Debugf("target = %+v\n", target)
+	logrus.Errorf("target = %+v\n", target)
 
 	i, err = os.Stat(target)
-	logrus.Debugf("i = %+v\n", i)
-	logrus.Debugf("err = %+v\n", err)
+	logrus.Errorf("i = %+v\n", i)
+	logrus.Errorf("err = %+v\n", err)
 
 	fdDir, err = os.Open("/proc/self/fd")
 	if err != nil {
