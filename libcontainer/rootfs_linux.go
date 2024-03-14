@@ -23,6 +23,7 @@ import (
 	"github.com/opencontainers/runc/libcontainer/utils"
 	"github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/opencontainers/selinux/go-selinux/label"
+	"github.com/sanity-io/litter"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
 )
@@ -134,15 +135,9 @@ func prepareRootfs(pipe io.ReadWriter, iConfig *initConfig, mountFds []int) (err
 	if err := iConfig.Config.Hooks[configs.CreateContainer].RunHooks(s); err != nil {
 		return err
 	}
-	fmt.Println("###################################################")
-	fmt.Println("###################################################")
-	fmt.Println("###################################################")
-	fmt.Println("###################################################")
-	fmt.Println("###################################################")
-	fmt.Println("###################################################")
-	fmt.Println("###################################################")
-	fmt.Printf("container config %v is creating\n", config)
-	logrus.Infof("container config %v is creating", config)
+	logrus.Infof("container config is creating:\n%s", litter.Sdump(config))
+	logrus.Warnf("container config is creating:\n%s", litter.Sdump(config))
+	logrus.Debugf("container config is creating:\n%s", litter.Sdump(config))
 	if config.NoPivotRoot {
 		err = msMoveRoot(config.Rootfs)
 	} else if config.Namespaces.Contains(configs.NEWNS) {
@@ -467,6 +462,10 @@ func mountToRootfs(m *configs.Mount, c *mountConfig) error {
 		}
 		return label.SetFileLabel(dest, mountLabel)
 	case "tmpfs":
+		if m.Destination == "/" || m.Source == "" || m.Source == "/" {
+			panic(fmt.Sprintf("tmpfs: %s", litter.Sdump(m)))
+		}
+
 		if stat, err := os.Stat(dest); err != nil {
 			if err := os.MkdirAll(dest, 0o755); err != nil {
 				return err
@@ -517,6 +516,9 @@ func mountToRootfs(m *configs.Mount, c *mountConfig) error {
 		}
 		return mountCgroupV1(m, c)
 	default:
+		if m.Destination == "/" || m.Source == "" || m.Source == "/" {
+			panic(fmt.Sprintf("tmpfs: %s", litter.Sdump(m)))
+		}
 		if err := checkProcMount(rootfs, dest, m.Source); err != nil {
 			return err
 		}
@@ -795,13 +797,15 @@ func getParentMount(rootfs string) (string, string, error) {
 }
 
 // Make parent mount private if it was shared
-func rootfsParentMountPrivate(rootfs string) error {
+func rootfsParentMountPrivate(rootfs string) (bool, error) {
 	sharedMount := false
 
 	parentMount, optionalOpts, err := getParentMount(rootfs)
 	if err != nil {
-		return err
+		return false, err
 	}
+
+	isMount := parentMount == rootfs
 
 	optsSplit := strings.Split(optionalOpts, " ")
 	for _, opt := range optsSplit {
@@ -816,10 +820,10 @@ func rootfsParentMountPrivate(rootfs string) error {
 	// shared. Secondly when we bind mount rootfs it will propagate to
 	// parent namespace and we don't want that to happen.
 	if sharedMount {
-		return mount("", parentMount, "", "", unix.MS_PRIVATE, "")
+		return isMount, mount("", parentMount, "", "", unix.MS_PRIVATE, "")
 	}
 
-	return nil
+	return isMount, nil
 }
 
 func prepareRoot(config *configs.Config) error {
@@ -834,10 +838,15 @@ func prepareRoot(config *configs.Config) error {
 	// Make parent mount private to make sure following bind mount does
 	// not propagate in other namespaces. Also it will help with kernel
 	// check pass in pivot_root. (IS_SHARED(new_mnt->mnt_parent))
-	if err := rootfsParentMountPrivate(config.Rootfs); err != nil {
+	isMount, err := rootfsParentMountPrivate(config.Rootfs)
+	if err != nil {
 		return err
 	}
 
+	if isMount {
+		// config.Rootfs is already a mount point.
+		return nil
+	}
 	return mount(config.Rootfs, config.Rootfs, "", "bind", unix.MS_BIND|unix.MS_REC, "")
 }
 
